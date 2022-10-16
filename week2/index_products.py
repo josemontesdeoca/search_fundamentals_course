@@ -81,7 +81,6 @@ mappings =  [
         ]
 
 def get_opensearch():
-
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')

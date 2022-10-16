@@ -9,6 +9,7 @@ from week2.opensearch import get_opensearch
 
 import week2.utilities.query_utils as qu
 
+
 bp = Blueprint('search', __name__, url_prefix='/search')
 
 
@@ -104,8 +105,10 @@ def query():
         if explain_val == "true":
             explain = True
 
-        query_obj = qu.create_query(user_query,  [], sort, sortDir, size=20)  # We moved create_query to a utility class so we could use it elsewhere.
+        query_obj = qu.create_query(user_query,  [], sort, sortDir, size=10)  # We moved create_query to a utility class so we could use it elsewhere.
+        
         ##### W2, L1, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
         print("Plain ol q: %s" % query_obj)
@@ -119,8 +122,10 @@ def query():
             explain = True
         if filters_input:
             (filters, display_filters, applied_filters) = process_filters(filters_input)
-        query_obj = qu.create_query(user_query,  filters, sort, sortDir, size=20)
+        query_obj = qu.create_query(user_query,  filters, sort, sortDir, size=10)
+        
         #### W2, L1, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
 
