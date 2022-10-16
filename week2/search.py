@@ -59,17 +59,49 @@ def process_filters(filters_input):
 @bp.route('/autocomplete', methods=['GET'])
 def autocomplete():
     results = {}
+    
     if request.method == 'GET':  # a query has been submitted
         prefix = request.args.get("prefix")
+        
         print(f"Prefix: {prefix}")
+        
         if prefix is not None:
-            type = request.args.get("type", "queries") # If type == queries, this is an autocomplete request, else if products, it's an instant search request.
+            # If type == queries, this is an autocomplete request, else 
+            # if products, it's an instant search request.
+            type = request.args.get("type", "queries")
+            
             ##### W2, L3, S1
+            opensearch = get_opensearch()
+            index = None
             search_response = None
-            print("TODO: implement autocomplete AND instant search")
+
+            if type == 'queries': # an autocomplete request
+                index = "bbuy_queries"
+            elif type == 'products':
+                index = "bbuy_products"
+            
+            if index is not None:
+                query_obj = {
+                    "suggest": {
+                        "autocomplete": {
+                            "prefix": prefix,
+                            "completion": {
+                                "field": "suggest",
+                                "skip_duplicates": "true"
+                            }
+                        }
+                    }
+                }
+                
+                search_response = opensearch.search(body=query_obj, index=index, explain=False)
+                
+                # print(search_response)
+            
             if (search_response and search_response['suggest']['autocomplete'] and search_response['suggest']['autocomplete'][0]['length'] > 0): # just a query response
                 results = search_response['suggest']['autocomplete'][0]['options']
+    
     print(f"Results: {results}")
+    
     return {"completions": results}
 
 @bp.route('/query', methods=['GET', 'POST'])
@@ -88,6 +120,7 @@ def query():
     autocompleteSelect = "queries"
     explain = False
     prior_clicks = current_app.config.get("priors_gb")
+    
     if request.method == 'POST':  # a query has been submitted
         user_query = request.form['query']
         if not user_query:
