@@ -202,15 +202,30 @@ def add_spelling_suggestions(query_obj, user_query):
 def add_click_priors(query_obj, user_query, priors_gb):
     try:
         prior_clicks_for_query = priors_gb.get_group(user_query)
+        
         if prior_clicks_for_query is not None and len(prior_clicks_for_query) > 0:
             click_prior = ""
             
             #### W2, L1, S1
             # Create a string object of SKUs and weights that will boost documents matching the SKU
-            print("TODO: Implement me")
-            
+            sku_items = prior_clicks_for_query.sku.drop_duplicates()
+            sku_counts = prior_clicks_for_query.sku.value_counts()
+            query_times_seen = prior_clicks_for_query.sku.count()
+
+            for sku in sku_items:
+                if sku_counts[sku] is not None:
+                    click_prior += "{}^{} ".format(sku, (sku_counts[sku]/query_times_seen))
+
             if click_prior != "":
-                click_prior_query_obj = None # Implement a query object that matches on the ID or SKU with weights of
+                # Implement a query object that matches on the ID or SKU with weights of
+                # print(click_prior)
+                click_prior_query_obj = {
+                    "query_string": {
+                        "query": click_prior,
+                        "fields": ["sku^100"],
+                    }
+                }
+                
                 # This may feel like cheating, but it's really not, esp. in ecommerce where you have all this prior data,
                 if click_prior_query_obj is not None:
                     query_obj["query"]["function_score"]["query"]["bool"]["should"].append(click_prior_query_obj)

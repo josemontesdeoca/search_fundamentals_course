@@ -144,6 +144,8 @@ def query():
         qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
+        qu.add_click_priors(query_obj, user_query, prior_clicks)
+
         print("Plain ol q: %s" % query_obj)
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
@@ -161,7 +163,7 @@ def query():
         qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
-
+        qu.add_click_priors(query_obj, user_query, prior_clicks)
     else:
         query_obj = qu.create_query("*", "", [], sort, sortDir, size=100)
 
